@@ -1,4 +1,4 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { Table, Button, Modal, Form, Input, message, Popconfirm } from 'antd';
 import Contact from '../Services/contacSerice';
