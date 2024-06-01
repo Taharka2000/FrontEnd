@@ -1,26 +1,15 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, message, Popconfirm } from 'antd';
+import React, { useState,  useEffect } from 'react';
+import {  Button, Form, Input, message } from 'antd';
 import Contact from '../Services/contacSerice';
 import { useNavigate, useParams } from "react-router-dom";
 
 const AjoutCompte: React.FC = () => {
     const [contacts, setContacts] = useState([]);
     const [loading, setLoading] = useState(false);
-    const { id } = useParams();
+  
     const [form] = Form.useForm();
     const navigate = useNavigate();
-    useEffect(() => {
-        if (id) {
-            Contact.getById(id)
-                .then((res) => {
-                    setContacts(res);
-                    form.setFieldsValue(res);
-                })
-                .catch((err) => {
-                    console.log("Erreur lors de la récupération du fiche Mineur:", err);
-                });
-        }
-    }, [id, form]);
+   
     const handleAddContact = async (values: any) => {
         setLoading(true)
         try {

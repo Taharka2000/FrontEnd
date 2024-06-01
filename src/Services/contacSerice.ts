@@ -27,7 +27,7 @@ const Contact = {
 
   getById: async (id: string) => {
     try {
-      const response = await axios.get(`${baseUrl}/${id}`);
+      const response = await axios.get(`${baseUrl}/findContact/${id}`);
       return response.data;
     } catch (error) {
       console.error("Error fetching livrable:", error);
