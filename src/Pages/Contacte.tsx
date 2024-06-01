@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { Table, Button, Modal, Form, Input, message, Popconfirm } from 'antd';
 import Contact from '../Services/contacSerice';
@@ -11,7 +10,8 @@ import {
 const RegistrationForm: React.FC = () => {
   const [contacts, setContacts] = useState<DataContact[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isViewModalVisible, setIsViewModalVisible] = useState(false);
   const [currentContact, setCurrentContact] = useState<DataContact | null>(null);
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -32,14 +32,20 @@ const RegistrationForm: React.FC = () => {
     loadData();
   }, [loadData]);
 
-  const showModal = (contact: DataContact) => {
+  const showEditModal = (contact: DataContact) => {
     setCurrentContact(contact);
     form.setFieldsValue(contact);
-    setIsModalVisible(true);
+    setIsEditModalVisible(true);
+  };
+
+  const showViewModal = (contact: DataContact) => {
+    setCurrentContact(contact);
+    setIsViewModalVisible(true);
   };
 
   const handleCancel = () => {
-    setIsModalVisible(false);
+    setIsEditModalVisible(false);
+    setIsViewModalVisible(false);
     form.resetFields();
     setCurrentContact(null);
   };
@@ -51,7 +57,7 @@ const RegistrationForm: React.FC = () => {
       const data = { ...values, _id: currentContact._id };
       await Contact.update(currentContact._id, data);
       message.success("Contact modifié avec succès");
-      setIsModalVisible(false);
+      setIsEditModalVisible(false);
       setCurrentContact(null);
       loadData();
     } catch (error) {
@@ -61,7 +67,16 @@ const RegistrationForm: React.FC = () => {
       setLoading(false);
     }
   };
-
+  const handleViewContact = async (id: string) => {
+    try {
+      const contact = await Contact.getById(id);
+      setCurrentContact(contact);
+      setIsViewModalVisible(true);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des détails du contact :", error);
+      message.error("Erreur lors de la récupération des détails du contact");
+    }
+  };
   const handleDeleteContact = async (id: string) => {
     try {
       await Contact.delete(id);
@@ -99,35 +114,54 @@ const RegistrationForm: React.FC = () => {
       width: 200,
     },
     {
-      title: "Actions",
-      key: "actions",
+      title: "Editer un  Contact",
+      key: "edit",
       fixed: "right",
-      width: 200,
-      render: (text: null, record: DataContact) => (
-        <div>
+      width: 100,
+      render: (text: any, record: DataContact) => (
+        <Button
+          type="link"
+          style={{ color: "#66BB6A" }}
+          icon={<EditOutlined />}
+          onClick={() => showEditModal(record)}
+        />
+      ),
+    },
+    {
+      title: "Afficher un Contact",
+      key: "view",
+      fixed: "right",
+      width: 100,
+      render: (text: any, record: DataContact) => (
+        <Button
+          type="link"
+          style={{ color: "#1890FF" }}
+          onClick={() => showViewModal(record)}
+        >
+          Voir
+        </Button>
+      ),
+    },
+    {
+      title: "Actions",
+      key: "delete",
+      fixed: "right",
+      width: 100,
+      render: (text: any, record: DataContact) => (
+        <Popconfirm
+          title="Êtes-vous sûr de vouloir supprimer ce contact ?"
+          onConfirm={() => handleDeleteContact(record._id)}
+          okText="Oui"
+          cancelText="Non"
+          okButtonProps={{ style: { color: "white", background: "#66BB6A" } }}
+          cancelButtonProps={{ style: { color: "white", background: "#FF7900" } }}
+        >
           <Button
             type="link"
-            style={{ color: "#66BB6A" }}
-            icon={<EditOutlined />}
-            onClick={() => showModal(record)}
+            style={{ color: "red" }}
+            icon={<DeleteOutlined />}
           />
-          <Popconfirm
-            title="Êtes-vous sûr de vouloir supprimer ce contact ?"
-            onConfirm={() => handleDeleteContact(record._id)}
-            okText="Oui"
-            cancelText="Non"
-            okButtonProps={{ style: { color: "white", background: "#66BB6A" } }}
-            cancelButtonProps={{
-              style: { color: "white", background: "#FF7900" },
-            }}
-          >
-            <Button
-              type="link"
-              style={{ color: "red" }}
-              icon={<DeleteOutlined />}
-            />
-          </Popconfirm>
-        </div>
+        </Popconfirm>
       ),
     },
   ];
@@ -151,7 +185,7 @@ const RegistrationForm: React.FC = () => {
 
       <Modal
         title="Modifier le contact"
-        visible={isModalVisible}
+        visible={isEditModalVisible}
         onCancel={handleCancel}
         footer={null}
       >
@@ -194,6 +228,21 @@ const RegistrationForm: React.FC = () => {
             </Button>
           </Form.Item>
         </Form>
+      </Modal>
+      <Modal
+        title="Détails du contact"
+        visible={isViewModalVisible}
+        onCancel={handleCancel}
+        footer={null}
+      >
+        {currentContact && (
+          <div>
+            <p><strong>Prénom:</strong> {currentContact.Prenom}</p>
+            <p><strong>Nom:</strong> {currentContact.Nom}</p>
+            <p><strong>Email:</strong> {currentContact.Email}</p>
+            <p><strong>Numéro:</strong> {currentContact.Numero}</p>
+          </div>
+        )}
       </Modal>
     </div>
   );
